@@ -1,0 +1,15 @@
+
+POST http://localhost:3000/task
+Content-Type: application/json
+
+{
+    "tas":"second task"
+}
+
+###
+
+GET http://localhost:3000/task
+
+###
+
+DELETE http://localhost:3000/task/645a65904b6dab43ca4f2edd

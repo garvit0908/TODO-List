@@ -6,21 +6,44 @@ import './App.css';
 
 function App() {
   const [inp, setInp] = useState("")//user se input lene ke liee
-  const [arr, setArr] = useState(JSON.parse(localStorage.getItem('ITEM'))|| [])
+  const [arr, setArr] = useState(JSON.parse(localStorage.getItem('ITEM')) || [])
+  //ye by default hi local storage se fetch krke laa ke deraaa hai..
 
-  useEffect(()=>{
-    
-      localStorage.setItem("ITEM",JSON.stringify(arr))
-    
-  },[arr])
-  function deleteTodo(element)
-  {
-    let p=element.target.parentNode.childNodes[1].innerText
-    let temp = arr.filter(i => i!==p)
+  useEffect(() => {
+    getAlltask()
+  }, [])
+
+  // useEffect(() => {
+
+  //   // localStorage.setItem("ITEM", JSON.stringify(arr))
+
+  // }, [arr])
+  async function deleteTodo(element) {
+    let p = await element.target.parentNode.childNodes[1].innerText
+    let id;
+    arr.forEach(element => {
+      if (element.tas === p)
+        id = element._id
+    });
+    console.log(id);
+    let temp = arr.filter(i => i.tas !== p)
     setArr(temp)
-    console.log(arr)
-    console.log(JSON.parse(localStorage.getItem('ITEM')))
-    // console.log(element.target.parentNode.childNodes)
+
+    await fetch(`http://localhost:3000/task/${id}`, {
+      method: "DELETE"
+    })
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.log(err))
+  }
+
+  async function getAlltask() {
+    await fetch('http://localhost:3000/task')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        setArr(data)
+      })
   }
   return (
     <div className="App">
@@ -32,28 +55,45 @@ function App() {
         }} placeholder='Enter your task '></input>
         <br />
 
-        <button className='button-7' onClick={() => {
-          setArr([...arr,inp]); // arr = temp
-          console.log(JSON.parse(localStorage.getItem('ITEM')))
+        <button className='button-7' onClick={async () => {
+          setArr([...arr, inp]); // arr = temp
+          // const obj={
+          //   tas: inp
+          // }
+          await fetch(`http://localhost:3000/task`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              tas: inp
+            })
+          })
+            .then(res => res.json())
+            .then(data => console.log(data))
+            .catch(err => console.log(err))
+
+
+          // console.log(JSON.parse(localStorage.getItem('ITEM')))
           // console.log(arr);
           setInp("")
         }}>Add</button>
 
         <h1>ToDOs</h1>
-        
-        <ul style={{color:"white"}} className="list" type="none">
-          {arr.length===0 && "No Todos"}
+
+        <ul style={{ color: "white" }} className="list" type="none">
+          {arr.length === 0 && "No Todos"}
           {/* mere pass sari tasks ki list hai ab usko display krna hai.. */}
           {
             arr.map((ar) => {
               return (
                 <li key={Math.random(1000)}>
-                  <input id="check" type="checkbox" checked={ar.completed}/>
-                  <span>{ar}</span>
-                  
+                  <input id="check" type="checkbox" checked={ar.completed} />
+                  <span>{ar.tas || ar}</span>
+
                   {/* {console.log(ar)} */}
-                  <button className="button-62" onClick={(e)=>deleteTodo(e)} >Delete</button>
-                  <br/>
+                  <button className="button-62" onClick={(e) => deleteTodo(e)} >Delete</button>
+                  <br />
                 </li>
               )
             })
@@ -64,7 +104,7 @@ function App() {
 
 
       </>
-    </div>
+    </div >
   );
 }
 
